@@ -8,3 +8,4 @@ human_time_now=`date -d @$timenow`
 
 git add .
 git commit -m "$1 $human_time_now"
+read -p "Press enter to continue"
