@@ -1,0 +1,1 @@
+sudo update-rc.d -f s_rails remove && sudo insserv -r s_rails && sudo update-rc.d s_rails defaults && sudo insserv s_rails
