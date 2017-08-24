@@ -1,0 +1,55 @@
+document.addEventListener("keydown", keyDownTextField, false);
+
+function keyDownTextField(e) {
+  var keyCode = e.keyCode;
+  if(keyCode==17) {
+    get_img();
+
+  }
+}
+
+function get_img() {
+var img = $('#tool-type').children().attr("src").substr(2);
+
+var json = '{' +
+ ' "requests": [ ' +
+   ' { ' + 
+     ' "image": { ' +
+       ' "source": {'+
+         ' "imageUri":' + ' "http://s0urce.io' + img +'"'   +
+'        }'+
+ '     },'+
+     ' "features": ['+
+       ' {'+
+          '"type": "TEXT_DETECTION"'+
+        '}'+
+     ' ],'+
+      '"imageContext": {'+
+        '"languageHints": ['+
+          '"en"'+
+        ']'+
+      '}'+
+    '}'+
+  ']'+
+'}'
+$.ajax({
+    type: 'POST',
+    url: "https://vision.googleapis.com/v1/images:annotate?key=" + 'AIzaSyByn5SDjUfbHPFziaDhRAmGVC1wWiATezM',
+    dataType: 'json',
+    data: json,
+   
+    headers: {
+      "Content-Type": "application/json",
+    },
+
+    success: function(data, textStatus, jqXHR) {
+		console.log(data);
+      console.log(data.responses[0]["textAnnotations"][1]["description"]);
+	document.getElementById('tool-type-word').value = data.responses[0]["textAnnotations"][1]["description"];
+//$('#tool-type-form').submit();
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      console.log('ERRORS: ' + textStatus + ' ' + errorThrown);
+    }
+  });
+}
