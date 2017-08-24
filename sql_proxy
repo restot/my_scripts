@@ -1,0 +1,1 @@
+sudo /home/restot/cloud_sql_proxy -instances="firm-container-167412:us-central1:sql-db" -dir=/cloudsql
