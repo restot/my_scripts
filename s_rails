@@ -1,0 +1,75 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          s_rails
+# Required-Start:    $all
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      6 0 1
+# Short-Description: simple description.
+### END INIT INFO
+PATHDIR=/home/restot/runtime/spree330
+LOGFILE=/var/log/s_rails.log
+PIDFILE=$PATHDIR/tmp/pids/passenger.80.pid
+DATE=`date +%Y-%m-%d\ %T\ %Z`
+SQL_INSTANCE=stalnoy-172220:europe-west1:stalnoy-db-mini
+
+start() 
+{
+        if [- f $PADFILE] && kill -0 $(cat $PIDFILE); then
+                echo 'Service already running' >&2
+                echo $(date +%Y-%m-%d\ %T\ %Z) Service already running >> $LOGFILE
+                return 1
+        fi
+
+        echo 'Starting rails server...' >&2
+        echo $(date +%Y-%m-%d\ %T\ %Z) Starting rails server... >> $LOGFILE
+sudo -u restot screen -S "proxy" -d -m
+sudo -u restot screen -r "proxy" -X stuff $'while ! sudo ~/cloud_sql_proxy -instances="$SQL_INSTANCE" -dir=/cloudsql; do sleep 1; done \n'
+
+sudo -u restot screen -S "pass" -d -m
+sudo -u restot screen -r "pass" -X stuff $"cd $PATHDIR \n"
+sudo -u restot screen -r "pass" -X stuff $'bash --login \n'
+#sudo -u restot screen -r "pass" -X stuff $'rvm gemset use 501 \n'
+sudo -u restot screen -r "pass" -X stuff $'rvmsudo passenger start -p 80 -b 0.0.0.0 -e production \n'
+
+
+echo ' Rails server started!' >&2
+echo $(date +%Y-%m-%d\ %T\ %Z)  Rails server started! >> $LOGFILE
+}
+
+stop()
+{
+
+echo 'Stopping rails server' >&2
+echo $(date +%Y-%m-%d\ %T\ %Z) Stopping rails server >> $LOGFILE
+if [ -f "$PIDFILE" ]
+then 
+sudo -u restot sudo passenger stop --port 80 $PATHDIR
+else
+        echo 'no pid file'
+fi
+sudo -u restot screen -X -S pass stuff $'^C'
+sudo -u restot screen -X -S pass quit
+sudo -u restot screen -X -S proxy quit
+mkdir $PATHDIR/log/"$DATE"
+mv $PATHDIR/log/passenger.80.log $PATHDIR/log/"$DATE"
+mv $PATHDIR/log/production.log $PATHDIR/log/"$DATE"
+echo 'Server stopped' >&2
+echo $(date +%Y-%m-%d\ %T\ %Z) Server stopped >> $LOGFILE
+}
+
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  retart)
+    stop
+    start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+esac
