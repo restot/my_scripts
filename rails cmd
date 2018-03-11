@@ -1,0 +1,5 @@
+File.open(File.path(Rails.root.join("export/taxons_v2.txt")) , 'w+') {|f| f.write(Spree::Taxon.all.to_json) }
+
+File.open(File.path(Rails.root.join("export/taxonomy.txt")) , 'w+') {|f| f.write(Spree::Taxonomy.all.as_json.pretty_inspect) }
+
+
