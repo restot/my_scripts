@@ -1,5 +1,68 @@
-File.open(File.path(Rails.root.join("export/taxons_v2.txt")) , 'w+') {|f| f.write(Spree::Taxon.all.to_json) }
+File.open(File.path(Rails.root.join("export/1.1_country.txt")) , 'w+') {|f| f.write(Spree::Country.all.to_json) }
 
-File.open(File.path(Rails.root.join("export/taxonomy.txt")) , 'w+') {|f| f.write(Spree::Taxonomy.all.as_json.pretty_inspect) }
+File.open(File.path(Rails.root.join("export/1.2_states.txt")) , 'w+') {|f| f.write(Spree::State.all.to_json) }
 
+File.open(File.path(Rails.root.join("export/2.1_taxonomy.txt")) , 'w+') {|f| f.write(Spree::Taxonomy.all.to_json) }
+
+File.open(File.path(Rails.root.join("export/2.2_taxons.txt")) , 'w+') {|f| f.write(Spree::Taxon.order('parent_id ASC').to_json) }
+
+File.open(File.path(Rails.root.join("export/3_sale_rate.txt")) , 'w+') {|f| f.write(Spree::SaleRate.all.to_json) }
+
+File.open(File.path(Rails.root.join("export/4.1_product.txt")) , 'w+') {|f| f.write(Spree::Product.all.to_json) }
+
+File.open(File.path(Rails.root.join("export/4.2_price.txt")) , 'w+') {|f| f.write(Spree::Price.all.to_json) }
+
+File.open(File.path(Rails.root.join("export/4.3_product_taxon.txt")) , 'w+') {|f| f.write (Spree::Product.all.each {|p| p.taxons }.to_json) }
+
+File.open(File.path(Rails.root.join("export/5.1_variant.txt")) , 'w+') {|f| f.write(Spree::Variant.all.to_json) }
+
+File.open(File.path(Rails.root.join("export/5.2_assets.txt")) , 'w+') {|f| f.write(Spree::Image.all.to_json) }
+
+File.open(File.path(Rails.root.join("export/5.3_properties.txt")) , 'w+') {|f| f.write(Spree::Property.all.to_json) }
+
+File.open(File.path(Rails.root.join("export/5.4_product_property.txt")) , 'w+') {|f| f.write(Spree::ProductProperty.all.to_json) }
+
+File.open(File.path(Rails.root.join("export/6_stalnoy_import.txt")) , 'w+') {|f| f.write(Spree::StalnoyImport.all.to_json) }
+
+
+ALTER SEQUENCE spree_states_id_seq RESTART WITH 1
+
+screen -d -m stalnoy_sql
+puts Readline::HISTORY.to_a
+h = Select.get_json(1).sort_by { |h| h['id'] }.last
+
+Spree::Admin::StalnoyImportExportsController
+
+include Select
+
+t.attributes.merge!(products: Spree::Taxon.find(2).products.map {|p| {'id' => p.id, 'slug' => p.slug} })
+
+File.open(File.path(Rails.root.join("export/4.3_product_taxon.txt")) , 'w+') {|f| f.write (Spree::Taxon.all.map {|t| t.attributes.merge!( products: t.products.map {|p| { id:p.id, slug: p.slug, name: p.name } })}.to_json) }
+
+Spree::Taxon.all.map {|t| t.attributes.merge!( products: t.products.map {|p| { id:p.id, slug: p.slug } });}
+
+
+
+case country
+     Spree::Country.create!(id: 1, "iso_name"=>"UKRAINE", "iso"=>"UA", "iso3"=>"UKR", "name"=>"Ukraine", "numcode"=>804, "states_required"=>false,  "zipcode_required"=>true)
+
+
+sql = "SELECT count(*),value FROM public.spree_product_properties WHERE property_id = '2' GROUP BY value ORDER BY value ASC"
+Spree::ProductProperty.connection.select_all(sql).to_hash
+
+
+Delayed::Job.enqueue DownloadJob.new('https://intertool.ua/xml_output/yandex_market.xml','inter'), :queue => 'yml'
+Delayed::Job.enqueue DownloadJob.new('https://toptul.org/price/grandprice.xml','grand'), :queue => 'yml'
+
+Delayed::Job.enqueue YmlProcessorJob.new('grand.json',true,false), :queue => 'yml'
+
+Delayed::Job.enqueue ConvertXmlToJsonJob.new('grand','grand2'), :queue => 'yml'
+
+
+a = Spree::Variant.find_by(sku: 'KT-6015')
+a.stock_items.update(backorderable: false)
+
+
+Zlib::Inflate.inflate(File.read(Rails.root.join('yml','inter.xml')))
+Zlib::GzipReader.open(Rails.root.join('yml','inter.xml')) {|gz| print gz.read}
 
