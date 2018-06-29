@@ -1,11 +1,7 @@
-# echo "hi $1 ..."
+#!/bin/bash
+ARGS="$@ "
+DATE=`date +"%y-%m-%d %T"`
 
-#timenow=`date +%s`
-timenow=`date` #macos
-#human_time_now=`date -d @$timenow`
-
-# echo $human_time_now
-args=$@
 git add .
-git commit -m "$args $timenow"
-
+STRING="$ARGS $DATE"
+git commit -m "$STRING" --verbose
