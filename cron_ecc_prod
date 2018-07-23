@@ -1,0 +1,4 @@
+SHELL=/bin/sh
+MAILTO=restot
+0 6 * * * /home/restot/script.sh >> /home/restot/cronlog.log 2>&1
+0 6 13 * * /home/restot/tar.sh >> /home/restot/cronlog.log 2>&1
