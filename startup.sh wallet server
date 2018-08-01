@@ -1,0 +1,4 @@
+#! /bin/sh
+echo $(date +%Y-%m-%d\ %T\ %Z) --reboot >> cronlog.log
+sudo -u root screen -S "wallet" -d -m
+sudo -u root screen -r "wallet" -X stuff "/usr/local/bin/MFCoind -d \n"
